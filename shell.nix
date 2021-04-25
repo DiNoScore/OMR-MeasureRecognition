@@ -101,6 +101,7 @@ let
     pandas
     tqdm
     pillow
+    hug
     requests
     scikitlearn
     detectron2
