@@ -33,7 +33,7 @@ from MetricsVisualizer import MetricsVisualizer
 by Marc Kletz
 """
 
-root_dir = "./Data"
+root_dir = "./../Data"
 all_classes = ["system_measures", "stave_measures", "staves"]
 
 # HACK This only works when we've installed streamlit with pipenv, so the
