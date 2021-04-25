@@ -20,7 +20,7 @@ from detectron2.data import DatasetCatalog, MetadataCatalog
 from detectron2.engine import DefaultPredictor
 
 
-type_of_annotation = "staves"
+annotation_type = "staves"
        
 def prepare_cfg_variables(root_dir, model, category):
     model_dir = os.path.join(root_dir, model + "-" + category)
@@ -44,20 +44,13 @@ def setup_cfg(num_classes, cfg_file, existing_model_weight_path):
 
     return cfg
     
-def generate_predictions_as_json(input_path, img_file_buffer, predictor, type_of_annotation):
-    if input_path == img_file_buffer[0]:
-        input_path = ""
-    json_out = {}
-    for img_file in img_file_buffer:
-        json_dict = []
-        json_dict.append(generate_JSON_single_category(os.path.join(input_path, img_file), predictor, type_of_annotation))
-        json_out[img_file] = json_dict
-        print(img_file + " done.")
-    if "." in input_path:
-        json_file_name = img_file_buffer.split[0] + "-" + type_of_annotation + ".json"
-    else:
-        json_file_name = type_of_annotation + ".json"
-    with open(json_file_name, "w", encoding="utf8") as outfile:
+def generate_predictions_as_json(input_images, predictor, annotation_type, out_path):
+    json_out = []
+    for img_file in input_images:
+        json_out.append(generate_JSON_single_category(img_file, predictor, annotation_type))
+        print("Processed '" + img_file + "'.")
+
+    with open(out_path, "w", encoding="utf8") as outfile:
         json.dump(json_out, outfile, indent=4, ensure_ascii=False)
 
 
@@ -85,28 +78,27 @@ def generate_JSON_single_category(img_file, predictor, annotation_type):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Performs detection over input folder or image file with a trained detector.')
-    parser.add_argument('input_images', type=str, default="photo",
+    parser.add_argument('input_images', type=str, nargs="*",
                         help='Path to the input image.')
-    parser.add_argument('--models_dir', type=str, default='./../Data',
+    parser.add_argument('--models-dir', type=str, required=True,
                         help='Path to the trained network.')
-    parser.add_argument('--model_type', type=str, default="R_50_FPN_3x",
+    parser.add_argument('--model-type', type=str, default="R_50_FPN_3x",
                         help='Modeltype of trained network.')
+    parser.add_argument('-o', '--out-path', type=str, default="/dev/stdout",
+                        help='Output path.')
     args = parser.parse_args()
+
     input_path = args.input_images
     root_dir = args.models_dir
     model = args.model_type
-    files_to_predict = []
-    if "." not in input_path:
-        for f in os.listdir(input_path):
-            files_to_predict.append(f)
-    else:
-        files_to_predict.append(input_path)
+    out_path = args.out_path
 
     def threadFunc():
-        generate_predictions_as_json(input_path, files_to_predict, predictor, type_of_annotation)
-        print("Done")
-    
-    cfg_file, path_to_weight_file = prepare_cfg_variables(root_dir, model, type_of_annotation)
+        generate_predictions_as_json(input_path, predictor, annotation_type, out_path)
+        print()
+        print("Done.")
+
+    cfg_file, path_to_weight_file = prepare_cfg_variables(root_dir, model, annotation_type)
     cfg = setup_cfg(1, cfg_file, path_to_weight_file)
     predictor = DefaultPredictor(cfg)
     th = threading.Thread(target=threadFunc)
