@@ -4,6 +4,7 @@ from DataLoader import DataLoader
 import os
 from detectron2 import model_zoo
 import torch
+import threading
 from detectron2.engine.defaults import DefaultPredictor
 from PIL import Image
 import numpy as np
@@ -73,9 +74,13 @@ for f in os.listdir(path_to_folder_with_images_to_predict):
     files_to_predict.append(path_to_folder_with_images_to_predict + "/" + f)
 # %%
 # predict your data
-for f in files_to_predict:
-    ImageDisplayer().displaySpecificPredictData(predictor, f)
+def threadFunc():
+    for f in files_to_predict:
+        ImageDisplayer().displaySpecificPredictData(predictor, f)
 # %%
+th = threading.Thread(target=threadFunc)
+th.start()
+th.join()
 # to create json files with raw data from predictions:
 def generate_predictions_as_json(img_file_buffer, model, type_of_annotation, predictor, user_folder):
     if "system_measures-staves" == type_of_annotation:
@@ -190,6 +195,9 @@ def generate_JSON_multiple_category(img_file, predictor, category):
     return json_dict
 
 # %%
-generate_predictions_as_json(files_to_predict, network_type, json_pathname_extension, predictor, "../CustomDataFolder")
-
+def threadFunc2():
+    generate_predictions_as_json(files_to_predict, network_type, json_pathname_extension, predictor, "../CustomDataFolder")
+th = threading.Thread(target=threadFunc2)
+th.start()
+th.join()
 # %%

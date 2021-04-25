@@ -43,7 +43,7 @@ class DataLoader:
         else:
             print("MuscimaPlusPlus_Measure_Annotations already exists")
 
-        measure_bounding_box_annotations_v2_path = os.path.join(root_dir)
+        measure_bounding_box_annotations_v2_path = os.path.join(root_dir, "Measure_Bounding_Box_Annotations_v2")
         if not os.path.exists(measure_bounding_box_annotations_v2_path):
             Downloader().download_and_extract_dataset(OmrDataset.MeasureBoundingBoxAnnotations_v2, measure_bounding_box_annotations_v2_path)
         else:

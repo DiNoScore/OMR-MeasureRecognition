@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import cv2
 import os
+import threading
 import random
 import json
 from tqdm import tqdm
@@ -81,6 +82,8 @@ def setup_cfg(num_classes, cfg_file, existing_model_weight_path):
     cfg.merge_from_file(model_zoo.get_config_file(cfg_file))
 
     cfg.MODEL.WEIGHTS = existing_model_weight_path
+    if not torch.cuda.is_available():
+        cfg.MODEL.DEVICE = "cpu"
 
     cfg.MODEL.ROI_HEADS.NUM_CLASSES = num_classes
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.2  # set the testing threshold for this model. Model should be at least 20% confident detection is correct
@@ -109,9 +112,12 @@ cfg = setup_cfg(len(type_of_annotation), cfg_file, path_to_weight_file)
 predictor = DefaultPredictor(cfg)
 
 # %%
-ImageDisplayer().displayRandomPredictData(predictor, muscima_data, muscima_metadata, 5)
+def threadFunc():
+    ImageDisplayer().displayRandomPredictData(predictor, muscima_data, muscima_metadata, 5)
 
-# %%
-ImageDisplayer().displayRandomPredictData(predictor, audioLabs_data, audioLabs_metadata, 5)
-
+    # %%
+    ImageDisplayer().displayRandomPredictData(predictor, audioLabs_data, audioLabs_metadata, 5)
+th = threading.Thread(target=threadFunc)
+th.start()
+th.join()
 # %%
