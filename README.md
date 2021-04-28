@@ -1,3 +1,81 @@
+# About this fork
+
+This repository is focused on using the results of the original project. If you are interested in training and evaluation of your own data set, please look upstream. Notable changes made:
+
+- Harnessed all dependencies in [Nix](https://nixos.org)
+	- Type `nix-shell` to get a ready to work environment with all packages and dependencies
+	- All dependencies are pinned so this will keep working forever™ (until the download links rot)
+	- [Direnv](https://direnv.net/) users should type `direnv allow` and feel at home
+- Added a standalone inference script and inference server script
+- Added a NixOS module to easily host the server in a sandboxed environment
+- Minor fixes and cleanups
+
+**Important:** the `detectron2` code *must not* run on the main thread, or it might never return. Especially this means that you must instruct your Python server to use multiple threads if you run into it.
+
+## CLI usage
+
+In the Nix shell (or some other suitable development environment), run:
+
+	python ./Python/infer.py --models_dir=$(nix-build models.nix) example-images/* -o output.json
+
+The result is a JSON list containing a list of staves for every input page:
+
+```json
+[
+	{
+		"width": 3493,
+		"height": 2002,
+		"staves": [
+			{
+				"left": 205,
+				"top": 1701,
+				"right": 3357,
+				"bottom": 1820,
+			},
+			…
+		],
+	},
+	…
+]
+```
+
+## Server usage
+
+Start the server with Flask:
+
+```sh
+export MODELS_DIR=$(nix-build models.nix)
+export FLASK_APP=Python/inference_server.py
+flask run --port=8000
+```
+
+Or in production mode:
+
+```sh
+export MODELS_DIR=./result
+export FLASK_ENV = "production"
+export PYTHONPATH=./Python
+gunicorn -b localhost:8000 inference_server --log-level=debug --timeout=300 --workers=3 --threads=3
+```
+
+Alternatively, you can simply import `server.nix` into your NixOS configuration and start the service. The systemd unit is pre-configured with the correct input data and also hardened.
+
+Upload some images with
+
+```python
+import requests
+staves = requests.post('http://localhost:8000/upload', files=[('file', open('image.jpg', 'rb'))]).json()
+```
+
+You'll find a more complex example in `./Python/inference_server_test.py`.
+
+Common HTTP error codes:
+
+- 200: The result is what you want
+- 400: You didn't upload an image
+- 413: You uploaded too many or too large images (Max 50 images per request, 8 MiB per image, 2048×2048 pixels)
+- 500: Python exception 🤡
+
 # About this repo 
 ## This repo has a live app running [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/marckletz/omr-measurerecognition/Python/streamlit_app.py)
 
