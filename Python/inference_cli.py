@@ -21,14 +21,16 @@ from detectron2.engine import DefaultPredictor
 
 
 annotation_type = "staves"
-       
-def prepare_cfg_variables(root_dir, model, category):
-    model_dir = os.path.join(root_dir, model + "-" + category)
+
+
+def prepare_cfg_variables(models_dir, model, category):
+    model_dir = os.path.join(models_dir, model + "-" + category)
     cfg_file = "COCO-Detection/faster_rcnn_" + model + ".yaml"
     weight_file = os.path.join(model_dir, "last_checkpoint")
     last_checkpoint = open(weight_file, "r").read()
     path_to_weight_file = os.path.join(model_dir, last_checkpoint)
     return cfg_file, path_to_weight_file     
+
 
 def setup_cfg(num_classes, cfg_file, existing_model_weight_path):
     cfg = get_cfg()
@@ -43,19 +45,19 @@ def setup_cfg(num_classes, cfg_file, existing_model_weight_path):
     cfg.MODEL.RETINANET.SCORE_THRESH_TEST = 0.2
 
     return cfg
-    
+
+
 def generate_predictions_as_json(input_images, predictor, annotation_type, out_path):
     json_out = []
     for img_file in input_images:
-        json_out.append(generate_JSON_single_category(img_file, predictor, annotation_type))
+        json_out.append(generate_JSON_single_category(Image.open(img_file).convert("RGB"), predictor, annotation_type))
         print("Processed '" + img_file + "'.")
 
     with open(out_path, "w", encoding="utf8") as outfile:
         json.dump(json_out, outfile, indent=4, ensure_ascii=False)
 
 
-def generate_JSON_single_category(img_file, predictor, annotation_type):
-    image = Image.open(img_file).convert("RGB")
+def generate_JSON_single_category(image, predictor, annotation_type):
     im = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
     outputs = predictor(im)
     all_boxes = outputs["instances"].pred_boxes.tensor.cpu().numpy() # left, top, right, bottom
@@ -76,6 +78,7 @@ def generate_JSON_single_category(img_file, predictor, annotation_type):
 
     return json_dict
 
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Performs detection over input folder or image file with a trained detector.')
     parser.add_argument('input_images', type=str, nargs="*",
@@ -95,7 +98,7 @@ if __name__ == "__main__":
 
     def threadFunc():
         generate_predictions_as_json(input_path, predictor, annotation_type, out_path)
-        print()
+        print() # In the case out_path=/dev/stdout
         print("Done.")
 
     cfg_file, path_to_weight_file = prepare_cfg_variables(root_dir, model, annotation_type)
