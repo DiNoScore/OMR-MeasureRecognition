@@ -8,9 +8,6 @@ import io
 from PIL import Image, UnidentifiedImageError
 
 # import some common libraries
-import torch
-import numpy as np
-import cv2
 import os
 
 # import some detectron2 utilities
