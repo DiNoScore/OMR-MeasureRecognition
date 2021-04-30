@@ -77,6 +77,8 @@ Common HTTP error codes:
 - 500: Python exception 🤡
 - 504: Service down
 
+A public server is hosted at <https://inference.piegames.de/public/upload>, it'll serve you on a "best effort" basis.
+
 ## Nix overview
 
 - `models.nix`: Fetches the pre-trained models into the Nix store.
