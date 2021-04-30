@@ -55,7 +55,7 @@ Or in production mode:
 export MODELS_DIR=./result
 export FLASK_ENV = "production"
 export PYTHONPATH=./Python
-gunicorn -b localhost:8000 inference_server --log-level=debug --timeout=300 --workers=3 --threads=3
+gunicorn -b localhost:8000 inference_server:app --log-level=debug --timeout=300 --workers=3 --threads=3
 ```
 
 Alternatively, you can simply import `server.nix` into your NixOS configuration and start the service. The systemd unit is pre-configured with the correct input data and also hardened.
@@ -75,6 +75,17 @@ Common HTTP error codes:
 - 400: You didn't upload an image
 - 413: You uploaded too many or too large images (Max 50 images per request, 8 MiB per image, 2048×2048 pixels)
 - 500: Python exception 🤡
+- 504: Service down
+
+## Nix overview
+
+- `models.nix`: Fetches the pre-trained models into the Nix store.
+- `overlay.nix`: A `nixpkgs` overlay that when applied will add all custom-packaged dependencies to the package set.
+- `shell.nix`: Contains all runtime + dev dependencies to give you a working development environment. Imports `overlay.nix`.
+- `server_app.nix`: Some ugly packaging of the inference server as a Python module. You only need this if you are starting the service in
+  NixOS, see `server.nix`.
+- `server.nix`: A prototype NixOS module that'll start a systemd service for the server. For it to work, you need to apply the overlay
+  into your system.
 
 # About this repo 
 ## This repo has a live app running [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/marckletz/omr-measurerecognition/Python/streamlit_app.py)

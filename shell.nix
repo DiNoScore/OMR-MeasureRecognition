@@ -4,7 +4,16 @@
 # muscima, mung, omrdatasettools
 # pydeck
 let
-  pkgs = import ./custom-dependencies.nix;
+  # The "main" nixpkgs. Pin it
+  pkgs = import (builtins.fetchTarball {
+    name = "nixpkgs-unstable-2021-04-24";
+    url = "https://github.com/nixos/nixpkgs/archive/abd57b544e59b54a24f930899329508aa3ec3b17.tar.gz";
+    sha256 = "0d6f0d4j5jhnvwdbsgddc62qls7yw1l916mmfq5an9pz5ykc9nwy";
+  }) {
+    overlays = [
+      (import ./overlay.nix)
+    ];
+  };
 
   my-python-packages = python-packages: with python-packages; [
     pip

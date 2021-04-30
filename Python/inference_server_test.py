@@ -3,11 +3,15 @@ import json
 from PIL import Image
 import io
 
+url = 'http://localhost:8000/upload'
+
+
 # Upload some garbage
-assert requests.post('http://localhost:8000/upload', files=[('file', open('README.md', 'rb'))]).status_code == 400
+status_code = requests.post(url, files=[('file', open('README.md', 'rb'))]).status_code
+assert status_code == 400, "Status code was " + str(status_code)
 
 # Upload a too large file
-assert requests.post('http://localhost:8000/upload', files=[('file', open('example-images/p001.png', 'rb'))]).status_code == 413
+assert requests.post(url, files=[('file', open('example-images/p001.png', 'rb'))]).status_code == 413
 
 # Upload multiple files and it should work
 files = []
@@ -22,7 +26,7 @@ for x in range(1, 21):
 
 # Test infer some images
 with open("output.json", "w", encoding="utf8") as outfile:
-    response = requests.post('http://localhost:8000/upload', files=files)
+    response = requests.post(url, files=files)
     print(response)
     print(response.content.decode())
     assert response.status_code == 200

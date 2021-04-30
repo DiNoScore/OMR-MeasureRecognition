@@ -32,5 +32,9 @@ buildPythonPackage rec {
   '';
   
   doCheck = false;
-  # pythonImportsCheck = [ "inference_cli" "inference_server" ];
+  pythonImportsCheck = [
+    "inference_cli"
+    "inference_server"
+    "flask"
+  ];
 }

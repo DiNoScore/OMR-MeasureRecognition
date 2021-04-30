@@ -19,16 +19,25 @@ from detectron2.engine import DefaultPredictor
 
 import inference_cli
 
-annotation_type = "staves"
-models_dir = os.environ['MODELS_DIR']
-
 
 from flask import Flask, Request
 
 
-application = Flask(__name__)
-application.config['MAX_CONTENT_LENGTH'] = 8 * 1024 * 1024
-application.config['JSON_AS_ASCII'] = False
+app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 8 * 1024 * 1024
+app.config['JSON_AS_ASCII'] = False
+
+@app.before_first_request
+def init():
+    global annotation_type, predictor
+    annotation_type = "staves"
+    models_dir = os.environ['MODELS_DIR']
+
+    cfg_file, path_to_weight_file = inference_cli.prepare_cfg_variables(models_dir, "R_50_FPN_3x", annotation_type)
+    cfg = inference_cli.setup_cfg(1, cfg_file, path_to_weight_file)
+    predictor = DefaultPredictor(cfg)
+
+    return app
 
 
 def generate_predictions_as_json(files, predictor, annotation_type) -> typing.Tuple[typing.Any, int]:
@@ -43,15 +52,14 @@ def generate_predictions_as_json(files, predictor, annotation_type) -> typing.Tu
             return f"File #{index} does not seem to be an image.", 400
     return flask.json.jsonify(json_out)
 
-cfg_file, path_to_weight_file = inference_cli.prepare_cfg_variables(models_dir, "R_50_FPN_3x", annotation_type)
-cfg = inference_cli.setup_cfg(1, cfg_file, path_to_weight_file)
-predictor = DefaultPredictor(cfg)
-
-@application.route('/upload', methods=['POST'])
+@app.route('/upload', methods=['GET', 'POST'])
 def detect_measures():
-    files = request.files.getlist("file")
+    if request.method == 'POST':
+        files = request.files.getlist("file")
 
-    if len(files) > 50:
-        return "Maximum of 50 files allowed per request", 413
-    
-    return generate_predictions_as_json(files, predictor, annotation_type)
+        if len(files) > 50:
+            return "Maximum of 50 files allowed per request", 413
+        
+        return generate_predictions_as_json(files, predictor, annotation_type)
+    else:
+        return "Yes, that's the correct URL! You need to POST-upload some images here to get your response (use multipart entries with name `file` for this)"
