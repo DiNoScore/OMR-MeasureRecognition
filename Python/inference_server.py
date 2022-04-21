@@ -59,7 +59,9 @@ def detect_measures():
 
         if len(files) > 50:
             return "Maximum of 50 files allowed per request", 413
-        
+        if len(files) == 0:
+            return "Must provide at least one file", 400
+
         return generate_predictions_as_json(files, predictor, annotation_type)
     else:
-        return "Yes, that's the correct URL! You need to POST-upload some images here to get your response (use multipart entries with name `file` for this)"
+        return "Yes, that's the correct URL! You need to POST-upload some images here to get your response (use a multipart entry like `Content-Disposition: form-data; name=\"file\"; filename=\"file\"` for this)"

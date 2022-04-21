@@ -35,7 +35,7 @@ let
 in
   pkgs.mkShell {
     # nativeBuildInputs is usually what you want -- tools you need to run
-    buildInputs = with pkgs; [
+    nativeBuildInputs = with pkgs; [
       python-with-my-packages
       ninja
       opencv2
