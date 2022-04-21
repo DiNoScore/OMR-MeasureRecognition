@@ -6,9 +6,9 @@
 let
   # The "main" nixpkgs. Pin it
   pkgs = import (builtins.fetchTarball {
-    name = "nixpkgs-unstable-2021-08-19";
-    url = "https://github.com/nixos/nixpkgs/archive/253aecf69ed7595aaefabde779aa6449195bebb7.tar.gz";
-    sha256 = "14szn1k345jfm47k6vcgbxprmw1v16n7mvyhcdl7jbjmcggjh4z7";
+    name = "nixpkgs-unstable-2022-04-21";
+    url = "https://github.com/nixos/nixpkgs/archive/4c344da29a5b46caadb87df1d194082a190e1199.tar.gz";
+    sha256 = "1m2m3wi52pr6gw5vg35zf3ykvp4ksllig5gdw6zvhk7i6v78ryci";
   }) {
     overlays = [
       (import ./overlay.nix)
@@ -31,7 +31,8 @@ let
     flask
     gunicorn
   ];
-  python-with-my-packages = pkgs.python38.withPackages my-python-packages;
+  # TODO remove the override
+  python-with-my-packages = (pkgs.python3.withPackages my-python-packages).override (args: { ignoreCollisions = true; });
 in
   pkgs.mkShell {
     # nativeBuildInputs is usually what you want -- tools you need to run

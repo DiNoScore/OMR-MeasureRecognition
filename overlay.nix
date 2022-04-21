@@ -2,20 +2,21 @@
 # Some pinned nixpkgs with custom dependencies. Import this and get some "pkgs" attribute.
 let
   # Some nixpkgs with open pull requests
+  # https://github.com/NixOS/nixpkgs/pull/120472
   pkgsOMR = builtins.fetchTarball {
-    name = "nixpkgs-omr-2021-04-24";
-    url = "https://github.com/piegamesde/nixpkgs/archive/7e5f1ffcb8a777c86d209dcda7ddd67a7b5a9745.tar.gz";
-    sha256 = "1ipr5hjlvazrq9ycxc0ggm8hpgzpmp6vv6pghankszsmv6n28w55";
+    name = "nixpkgs-omr-2022-04-21";
+    url = "https://github.com/piegamesde/nixpkgs/archive/68ec1b5f826a13911d8e5c2a0f758c20f8011805.tar.gz";
+    sha256 = "1m0ijw4lrlysxrdb64pz67mfq0bargq4cfbdy5bins2kz6b2vhgd";
   };
-
+  # https://github.com/NixOS/nixpkgs/pull/120517
   pkgsDetectron = builtins.fetchTarball {
-    name = "nixpkgs-detectron-2021-08-19";
-    url = "https://github.com/piegamesde/nixpkgs/archive/eb391cd57bece806cabc3e6280ef9d52944fc61e.tar.gz";
-    sha256 = "1v21anyhy3f8gzmhnj1facz8lpy2qwccw4p8k97ch7whcw1xxn11";
+    name = "nixpkgs-detectron-2022-04-21";
+    url = "https://github.com/piegamesde/nixpkgs/archive/a4ca96a054b678f1e5a0156af9ddf92414c237f3.tar.gz";
+    sha256 = "1x3si1047901i59an5hgxwyknjl5f6aw9d71dwsk7fqrlaypzvnd";
   };
 in
-  (pkgs: super: {
-    python38 = super.python38.override {
+  (pkgs: super: let inherit (pkgs) writeText; in {
+    python3 = super.python3.override {
       # Careful, we're using a different self and super here!
       packageOverrides = pkgs: super: {
         iopath = pkgs.callPackage "${pkgsDetectron}/pkgs/development/python-modules/iopath/default.nix" { };
@@ -25,21 +26,39 @@ in
         hydra-core = pkgs.callPackage "${pkgsDetectron}/pkgs/development/python-modules/hydra-core/default.nix" { };
         detectron2 = pkgs.callPackage "${pkgsDetectron}/pkgs/development/python-modules/detectron2/default.nix" { };
 
-        # streamlit requires click < 8 for now
-        click = pkgs.callPackage "${pkgsOMR}/pkgs/development/python-modules/click/default.nix" { };
-
-        mung = pkgs.callPackage "${pkgsOMR}/pkgs/development/python-modules/mung/default.nix" { };
+        mung = (pkgs.callPackage "${pkgsOMR}/pkgs/development/python-modules/mung/default.nix" { }).overrideAttrs (old: {
+          postInstall = "rm -rf $out/bin";
+        });
         muscima = pkgs.callPackage "${pkgsOMR}/pkgs/development/python-modules/muscima/default.nix" { };
-        omrdatasettools = pkgs.callPackage "${pkgsOMR}/pkgs/development/python-modules/omrdatasettools/default.nix" { };
-        
+        omrdatasettools = (pkgs.callPackage "${pkgsOMR}/pkgs/development/python-modules/omrdatasettools/default.nix" { }).overrideAttrs (old: {
+          postInstall = "rm -rf $out/bin";
+        });
+
+        # TODO remove with next update
         pydeck = (pkgs.buildPythonPackage rec {
           pname = "pydeck";
-          version = "0.6.1";
+          version = "0.7.1";
 
           src = pkgs.fetchPypi {
             inherit pname version;
-            sha256 = "1l18iy3l6cgqlxwf9bvqijy494hx4hsnj1nm9i2pabz94i24hcd4";
+            sha256 = "0bmx5q1mpdp2rx89qp1bd8b6s8a5l6zn5jyp4xny243mkz4h2xlh";
           };
+
+          patches = [(writeText "fixup-fuckup.patch" ''
+            diff --git a/pyproject.toml b/pyproject.toml
+            index 8b9ec0e87d..32cbac6ef9 100644
+            --- a/pyproject.toml
+            +++ b/pyproject.toml
+            @@ -1,5 +1,7 @@
+             [project]
+             name = "pydeck"
+            -version = "0.3.0"
+            +version = "0.7.1"
+            +requires-python = ">=3.7"
+
+            +[build-system]
+             requires = [
+          '')];
 
           checkInputs = with pkgs; [
             jupyter
@@ -59,36 +78,7 @@ in
             numpy
           ];
         });
-        
       };
     };
-    python38Packages = super.recurseIntoAttrs (pkgs.python38.pkgs);
-
-    streamlit = (super.streamlit.overridePythonAttrs (old: rec {
-      version = "0.86.0";
-
-      src = pkgs.python38Packages.fetchPypi {
-        inherit version;
-        inherit (old) pname format;
-        sha256 = "1nwa647cj1gwvpik84cfbdsis2aqh7hbzwnh0r5i5bf7ncv8qab6";
-      };
-      propagatedBuildInputs = (pkgs.lib.remove pkgs.python38Packages.tornado_5 old.propagatedBuildInputs) ++ (with pkgs.python38Packages; [
-        altair
-        astor
-        base58
-        blinker
-        cachetools
-        click
-        pandas
-        pip
-        protobuf
-        pyarrow
-        pydeck
-        GitPython
-        tornado
-        tzlocal
-        validators
-        watchdog
-      ]);
-    }));
+    python3Packages = super.recurseIntoAttrs (pkgs.python3.pkgs);
   })

@@ -16,7 +16,7 @@ This repository is focused on using the results of the original project. If you 
 
 In the Nix shell (or some other suitable development environment), run:
 
-	python ./Python/infer.py --models_dir=$(nix-build models.nix) example-images/* -o output.json
+	python ./Python/inference_cli.py --models-dir=$(nix-build models.nix) example-images/* -o output.json
 
 The result is a JSON list containing a list of staves for every input page:
 
@@ -52,7 +52,7 @@ flask run --port=8000
 Or in production mode:
 
 ```sh
-export MODELS_DIR=./result
+export MODELS_DIR=$(nix-build models.nix)
 export FLASK_ENV = "production"
 export PYTHONPATH=./Python
 gunicorn -b localhost:8000 inference_server:app --log-level=debug --timeout=300 --workers=3 --threads=3
