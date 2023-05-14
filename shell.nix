@@ -6,9 +6,9 @@
 let
   # The "main" nixpkgs. Pin it
   pkgs = import (builtins.fetchTarball {
-    name = "nixpkgs-unstable-2022-04-21";
-    url = "https://github.com/nixos/nixpkgs/archive/4c344da29a5b46caadb87df1d194082a190e1199.tar.gz";
-    sha256 = "1m2m3wi52pr6gw5vg35zf3ykvp4ksllig5gdw6zvhk7i6v78ryci";
+    name = "nixpkgs-unstable-2023-05-14";
+    url = "https://github.com/nixos/nixpkgs/archive/9241cee3c4cc58d77f588a00f5ef6d69c989fd0d.tar.gz";
+    sha256 = "sha256:1vsk8i5p1slfh457iqz20w3wgas5vajin3w5wyjcbr58jmn85lff";
   }) {
     overlays = [
       (import ./overlay.nix)

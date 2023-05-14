@@ -19,7 +19,7 @@ print("Test 2 passed")
 files = []
 for x in range(1, 21):
     image = Image.open('example-images/p' + str(x).zfill(3) + '.png')
-    image.thumbnail([1024, 1024], Image.ANTIALIAS)
+    image.thumbnail([1024, 1024], Image.LANCZOS)
 
     byteIO = io.BytesIO()
     image.save(byteIO, format='PNG')
