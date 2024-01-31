@@ -82,8 +82,7 @@ A public server is hosted at <https://inference.piegames.de/public/upload>, it'l
 ## Nix overview
 
 - `models.nix`: Fetches the pre-trained models into the Nix store.
-- `overlay.nix`: A `nixpkgs` overlay that when applied will add all custom-packaged dependencies to the package set.
-- `shell.nix`: Contains all runtime + dev dependencies to give you a working development environment. Imports `overlay.nix`.
+- `shell.nix`: Contains all runtime + dev dependencies to give you a working development environment.
 - `server_app.nix`: Some ugly packaging of the inference server as a Python module. You only need this if you are starting the service in
   NixOS, see `server.nix`.
 - `server.nix`: A prototype NixOS module that'll start a systemd service for the server. For it to work, you need to apply the overlay

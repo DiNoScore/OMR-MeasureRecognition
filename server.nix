@@ -1,17 +1,7 @@
 # NixOS module that configures and runs an inference server
 {config, pkgs, lib}:
 let
-  custom_pkgs = import (builtins.fetchTarball {
-    name = "nixpkgs-unstable-2023-05-14";
-    url = "https://github.com/nixos/nixpkgs/archive/9241cee3c4cc58d77f588a00f5ef6d69c989fd0d.tar.gz";
-    sha256 = "sha256:1vsk8i5p1slfh457iqz20w3wgas5vajin3w5wyjcbr58jmn85lff";
-  }) {
-    overlays = [
-      (import ./overlay.nix)
-    ];
-  };
-
-  models = import ./models.nix { pkgs = custom_pkgs; };
+  models = import ./models.nix { inherit pkgs; };
   server_app = custom_pkgs.python38Packages.callPackage ./server_app.nix {};
 
   custom_python = custom_pkgs.python38.withPackages (pypkgs: [

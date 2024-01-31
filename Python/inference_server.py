@@ -27,17 +27,14 @@ app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 8 * 1024 * 1024
 app.config['JSON_AS_ASCII'] = False
 
-@app.before_first_request
-def init():
-    global annotation_type, predictor
-    annotation_type = "staves"
-    models_dir = os.environ['MODELS_DIR']
+# Initialization
+global annotation_type, predictor
+annotation_type = "staves"
+models_dir = os.environ['MODELS_DIR']
 
-    cfg_file, path_to_weight_file = inference_cli.prepare_cfg_variables(models_dir, "R_50_FPN_3x", annotation_type)
-    cfg = inference_cli.setup_cfg(1, cfg_file, path_to_weight_file)
-    predictor = DefaultPredictor(cfg)
-
-    return app
+cfg_file, path_to_weight_file = inference_cli.prepare_cfg_variables(models_dir, "R_50_FPN_3x", annotation_type)
+cfg = inference_cli.setup_cfg(1, cfg_file, path_to_weight_file)
+predictor = DefaultPredictor(cfg)
 
 
 def generate_predictions_as_json(files, predictor, annotation_type) -> typing.Tuple[typing.Any, int]:

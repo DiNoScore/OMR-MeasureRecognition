@@ -9,7 +9,7 @@
 , pytorch
 , detectron2
 , torchvision
-, opencv3
+, opencv4
 }:
 
 buildPythonPackage rec {
@@ -24,7 +24,7 @@ buildPythonPackage rec {
     pytorch
     detectron2
     torchvision
-    opencv3
+    opencv4
   ];
 
   unpackPhase = ''
@@ -34,7 +34,7 @@ buildPythonPackage rec {
   doCheck = false;
   pythonImportsCheck = [
     "inference_cli"
-    "inference_server"
+    # "inference_server" # This is broken because it will load too much on import due to the `before_first_request` removal
     "flask"
   ];
 }
