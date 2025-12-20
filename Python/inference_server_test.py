@@ -4,6 +4,7 @@ from PIL import Image
 import io
 
 url = 'http://localhost:8000/upload'
+# url = 'https://inference.piegames.de/public/upload'
 
 
 # Upload some garbage

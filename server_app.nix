@@ -6,7 +6,7 @@
 , linkFarm
 , flask
 , pillow
-, pytorch
+, torch
 , detectron2
 , torchvision
 , opencv4
@@ -17,11 +17,12 @@ buildPythonPackage rec {
   version = "42";
 
   src = ./Python;
+  format = "pyproject";
   
   propagatedBuildInputs = [
     flask
     pillow
-    pytorch
+    torch
     detectron2
     torchvision
     opencv4

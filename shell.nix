@@ -10,16 +10,16 @@ let
     tqdm
     pillow
     requests
-    scikitlearn
+    scikit-learn
     detectron2
-    pytorch
+    torch
     torchvision
     opencv4
     omrdatasettools
     flask
     gunicorn
+    (pkgs.python3Packages.callPackage ./server_app.nix {})
   ];
-  # TODO remove the override
   python-with-my-packages = (pkgs.python3.withPackages my-python-packages).override (args: { ignoreCollisions = true; });
 in
 pkgs.mkShell {
